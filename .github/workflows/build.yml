@@ -22,7 +22,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-default
+    runs-on: ubuntu-latest
     steps:
       - name: Cache Godot
         id: cache-godot
@@ -41,7 +41,7 @@ jobs:
   release:
     if: github.event.inputs.release
     needs: build
-    runs-on: ubuntu-default
+    runs-on: ubuntu-latest
     steps:
       - name: Cache Godot
         id: cache-godot
@@ -58,7 +58,7 @@ jobs:
   docker:
     if: github.event.inputs.push_to_docker_hub
     needs: build
-    runs-on: ubuntu-default
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Cache Godot
