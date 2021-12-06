@@ -41,7 +41,7 @@ jobs:
           /alpine/enter-chroot scons -C godot -j2 platform=server tools=yes target=release_debug use_llvm=yes LINKFLAGS=-lexecinfo
           cp godot/bin/godot_server.x11.opt.tools.64.llvm ${{ env.GODOT_FILENAME }}
   release:
-    if: github.event.inputs.release
+    if: github.event.inputs.release == true
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +59,7 @@ jobs:
           tag_name: v${{ github.event.inputs.version }}
           files: ${{ env.GODOT_FILENAME }}
   docker:
-    if: github.event.inputs.push_to_docker_hub
+    if: github.event.inputs.push_to_docker_hub == true
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -77,5 +77,5 @@ jobs:
       - name: Push versioned image to Docker Hub
         run: docker push xaltaq/godot-alpine:${{ github.event.inputs.version }}
       - name: Push latest image to Docker Hub
-        if: github.event.inputs.latest_release
+        if: github.event.inputs.latest_release == true
         run: docker push xaltaq/godot-alpine:latest
