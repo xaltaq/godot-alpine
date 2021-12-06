@@ -19,6 +19,7 @@ on:
         default: true
 env:
   CACHE_GODOT: cache_godot_${{ github.event.inputs.version }}
+  GODOT_FILENAME: godot_headless
 
 jobs:
   build:
@@ -28,7 +29,7 @@ jobs:
         id: cache-godot
         uses: actions/cache@v2
         with:
-          path: godot
+          path: ${{ env.GODOT_FILENAME }}
           key: ${{ env.CACHE_GODOT }}
       - name: Build Godot on Alpine chroot
         if: steps.cache-godot.outputs.cache-hit != 'true'
@@ -38,7 +39,7 @@ jobs:
           sudo ./alpine-chroot-install/alpine-chroot-install
           /alpine/enter-chroot apk add scons pkgconf clang libx11-dev libxcursor-dev libxinerama-dev libxi-dev libxrandr-dev libexecinfo-dev
           /alpine/enter-chroot scons -C godot -j2 platform=server tools=yes target=release_debug use_llvm=yes LINKFLAGS=-lexecinfo
-          mv godot/bin/godot_server.x11.opt.tools.64.llvm godot
+          cp godot/bin/godot_server.x11.opt.tools.64.llvm ${{ env.GODOT_FILENAME }}
   release:
     if: github.event.inputs.release
     needs: build
@@ -48,7 +49,7 @@ jobs:
         id: cache-godot
         uses: actions/cache@v2
         with:
-          path: godot
+          path: ${{ env.GODOT_FILENAME }}
           key: ${{ env.CACHE_GODOT }}
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -56,7 +57,7 @@ jobs:
           name: Godot v${{ github.event.inputs.version }} headless for Alpine Linux
           body: Godot v${{ github.event.inputs.version }} headless for Alpine Linux
           tag_name: v${{ github.event.inputs.version }}
-          files: godot
+          files: ${{ env.GODOT_FILENAME }}
   docker:
     if: github.event.inputs.push_to_docker_hub
     needs: build
@@ -67,7 +68,7 @@ jobs:
         id: cache-godot
         uses: actions/cache@v2
         with:
-          path: godot
+          path: ${{ env.GODOT_FILENAME }}
           key: ${{ env.CACHE_GODOT }}
       - name: Login
         run: docker login -u ${{ secrets.dockerhub_username }} -p ${{ secrets.dockerhub_password }}
