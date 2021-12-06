@@ -71,7 +71,7 @@ jobs:
           path: ${{ env.GODOT_FILENAME }}
           key: ${{ env.CACHE_GODOT }}
       - name: Login
-        run: docker login -u ${{ secrets.dockerhub_username }} -p ${{ secrets.dockerhub_password }}
+        run: docker login -u ${{ secrets.dockerhub_username }} -p '${{ secrets.dockerhub_password }}'
       - name: Build container
         run: docker build -t xaltaq/godot-alpine:${{ github.event.inputs.version }} -t xaltaq/godot-alpine:latest .
       - name: Push versioned image to Docker Hub
