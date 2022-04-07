@@ -8,15 +8,8 @@ on:
       release:
         description: 'Add binary to releases'
         type: boolean
-        default: true
-      push_to_docker_hub:
-        description: 'Push resulting container to Docker Hub'
-        type: boolean
-        default: true
-      latest_release:
-        description: 'Mark current build as latest'
-        type: boolean
-        default: true
+      docker_tag:
+        description: 'Tag to set to Docker image; set to empty to not push to Docker Hub'
 env:
   CACHE_GODOT: cache_godot_${{ github.event.inputs.version }}
   GODOT_FILENAME: godot_headless
@@ -59,7 +52,7 @@ jobs:
           tag_name: v${{ github.event.inputs.version }}
           files: ${{ env.GODOT_FILENAME }}
   docker:
-    if: github.event.inputs.push_to_docker_hub == 'true'
+    if: github.event.inputs.docker_tag != ''
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -73,9 +66,6 @@ jobs:
       - name: Login
         run: docker login -u ${{ secrets.dockerhub_username }} -p '${{ secrets.dockerhub_password }}'
       - name: Build container
-        run: docker build -t xaltaq/godot-alpine:${{ github.event.inputs.version }} -t xaltaq/godot-alpine:latest --build-arg GODOT_FILENAME=${{ env.GODOT_FILENAME }} .
-      - name: Push versioned image to Docker Hub
-        run: docker push xaltaq/godot-alpine:${{ github.event.inputs.version }}
-      - name: Push latest image to Docker Hub
-        if: github.event.inputs.latest_release == 'true'
-        run: docker push xaltaq/godot-alpine:latest
+        run: docker build -t xaltaq/godot-alpine:${{ github.event.inputs.docker_tag }} --build-arg GODOT_FILENAME=${{ env.GODOT_FILENAME }} .
+      - name: Push image to Docker Hub
+        run: docker push xaltaq/godot-alpine:${{ github.event.inputs.docker_tag }}
